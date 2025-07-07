@@ -5,9 +5,12 @@
 
 *~
 *.a
+*.lib
 *.lo
 *.o
+*.obj
 *.dylib
+*.exe
 
 *.gcda
 *.gcno
