@@ -496,7 +496,11 @@ static void test_dict_inflate(Byte *compr, uLong comprLen, Byte *uncompr,
 
 int main(int argc, char *argv[]) {
     Byte *compr, *uncompr;
+#ifdef SMALL_MEDIUM
+    uLong uncomprLen = 2000;
+#else
     uLong uncomprLen = 20000;
+#endif
     uLong comprLen = 3 * uncomprLen;
     static const char* myVersion = ZLIB_VERSION;
 

@@ -193,7 +193,7 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #if defined(pyr) || defined(Z_SOLO)
 #  define NO_MEMCPY
 #endif
-#if defined(SMALL_MEDIUM) && !defined(_MSC_VER) && !defined(__SC__)
+#if defined(SMALL_MEDIUM) && !defined(_MSC_VER) && !defined(__SC__) && !defined(__WATCOMC__)
  /* Use our own functions for small and medium model with MSC <= 5.0.
   * You may have to use the same strategy for Borland C (untested).
   * The __SC__ check is for Symantec.
@@ -207,15 +207,18 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  ifdef SMALL_MEDIUM /* MSDOS small or medium model */
 #    define zmemcpy _fmemcpy
 #    define zmemcmp _fmemcmp
+#    define zmemchr _fmemchr
 #    define zmemzero(dest, len) _fmemset(dest, 0, len)
 #  else
 #    define zmemcpy memcpy
 #    define zmemcmp memcmp
+#    define zmemchr memchr
 #    define zmemzero(dest, len) memset(dest, 0, len)
 #  endif
 #else
    void ZLIB_INTERNAL zmemcpy(Bytef* dest, const Bytef* source, uInt len);
    int ZLIB_INTERNAL zmemcmp(const Bytef* s1, const Bytef* s2, uInt len);
+   const Bytef* ZLIB_INTERNAL zmemchr(const Bytef* source, uInt ch, uInt len);
    void ZLIB_INTERNAL zmemzero(Bytef* dest, uInt len);
 #endif
 

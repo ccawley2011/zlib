@@ -1,0 +1,45 @@
+# Makefile for zlib
+# OpenWatcom medium model
+# Last updated: 08-Jul-2025
+
+# To use, do "wmake -f watcom_m.mak"
+
+C_SOURCE =  adler32.c  compress.c crc32.c   deflate.c    &
+	    gzclose.c  gzlib.c    gzread.c  gzwrite.c    &
+            infback.c  inffast.c  inflate.c inftrees.c   &
+            trees.c    uncompr.c  zutil.c
+
+OBJS =      adler32.obj  compress.obj crc32.obj   deflate.obj    &
+	    gzclose.obj  gzlib.obj    gzread.obj  gzwrite.obj    &
+            infback.obj  inffast.obj  inflate.obj inftrees.obj   &
+            trees.obj    uncompr.obj  zutil.obj
+
+CC       = wcc
+LINKER   = wcl
+CFLAGS   = -zq -mm -s -bt=dos -oilrtfm -fr=nul -wx -I"$(%WATCOM)/h"
+LDFLAGS  = -zq
+ZLIB_LIB = zlib_m.lib
+
+.c:.;./test
+.c.obj:
+        $(CC) $(CFLAGS) -fo=$^@ $<
+
+all: $(ZLIB_LIB) example.exe minigzip.exe
+
+$(ZLIB_LIB): $(OBJS)
+	wlib -q -b -c $(ZLIB_LIB) -+adler32.obj  -+compress.obj -+crc32.obj
+	wlib -q -b -c $(ZLIB_LIB) -+gzclose.obj  -+gzlib.obj    -+gzread.obj   -+gzwrite.obj
+        wlib -q -b -c $(ZLIB_LIB) -+deflate.obj  -+infback.obj
+        wlib -q -b -c $(ZLIB_LIB) -+inffast.obj  -+inflate.obj  -+inftrees.obj
+        wlib -q -b -c $(ZLIB_LIB) -+trees.obj    -+uncompr.obj  -+zutil.obj
+
+example.exe: $(ZLIB_LIB) example.obj
+	$(LINKER) $(LDFLAGS) -fe=example.exe example.obj $(ZLIB_LIB)
+
+minigzip.exe: $(ZLIB_LIB) minigzip.obj
+	$(LINKER) $(LDFLAGS) -fe=minigzip.exe minigzip.obj $(ZLIB_LIB)
+
+clean: .SYMBOLIC
+          rm -f *.obj
+          rm -f $(ZLIB_LIB)
+          @echo Cleaning done

@@ -576,7 +576,7 @@ unsigned long ZEXPORT crc32_z(unsigned long crc, const unsigned char FAR *buf,
                               z_size_t len) {
     z_crc_t val;
     z_word_t crc1, crc2;
-    const z_word_t *word;
+    const z_word_t FAR *word;
     z_word_t val0, val1, val2;
     z_size_t last, last2, i;
     z_size_t num;
@@ -599,7 +599,7 @@ unsigned long ZEXPORT crc32_z(unsigned long crc, const unsigned char FAR *buf,
     }
 
     /* Prepare to compute the CRC on full 64-bit words word[0..num-1]. */
-    word = (z_word_t const *)buf;
+    word = (z_word_t const FAR *)buf;
     num = len >> 3;
     len &= 7;
 
@@ -708,7 +708,7 @@ unsigned long ZEXPORT crc32_z(unsigned long crc, const unsigned char FAR *buf,
     /* If provided enough bytes, do a braided CRC calculation. */
     if (len >= N * W + W - 1) {
         z_size_t blks;
-        z_word_t const *words;
+        z_word_t const FAR *words;
         unsigned endian;
         int k;
 
@@ -721,7 +721,7 @@ unsigned long ZEXPORT crc32_z(unsigned long crc, const unsigned char FAR *buf,
         /* Compute the CRC on as many N z_word_t blocks as are available. */
         blks = len / (N * W);
         len -= blks * N * W;
-        words = (z_word_t const *)buf;
+        words = (z_word_t const FAR *)buf;
 
         /* Do endian check at execution time instead of compile time, since ARM
            processors can change the endianness at execution time. If the
@@ -983,7 +983,7 @@ unsigned long ZEXPORT crc32_z(unsigned long crc, const unsigned char FAR *buf,
         /*
           Update the pointer to the remaining bytes to process.
          */
-        buf = (unsigned char const *)words;
+        buf = (unsigned char const FAR *)words;
     }
 
 #endif /* W */

@@ -4,12 +4,25 @@
  */
 
 #include "gzguts.h"
+#include "zutil.h"
+
+#ifdef SMALL_MEDIUM
+local ssize_t READ(int handle, unsigned char FAR *buffer, size_t count) {
+    unsigned bytes;
+    if (_dos_read(_get_osfhandle(handle), buffer, count, &bytes) == 0)
+        return bytes;
+    else
+        return -1;
+}
+#else
+#define READ read
+#endif
 
 /* Use read() to load a buffer -- return -1 on error, otherwise 0.  Read from
    state->fd, and update state->eof, state->err, and state->msg as appropriate.
    This function needs to loop on read(), since read() is not guaranteed to
    read the number of bytes requested, depending on the type of descriptor. */
-local int gz_load(gz_statep state, unsigned char *buf, unsigned len,
+local int gz_load(gz_statep state, unsigned char FAR *buf, unsigned len,
                   unsigned *have) {
     int ret;
     unsigned get, max = ((unsigned)-1 >> 2) + 1;
@@ -19,7 +32,7 @@ local int gz_load(gz_statep state, unsigned char *buf, unsigned len,
         get = len - *have;
         if (get > max)
             get = max;
-        ret = read(state->fd, buf + *have, get);
+        ret = READ(state->fd, buf + *have, get);
         if (ret <= 0)
             break;
         *have += (unsigned)ret;
@@ -49,7 +62,7 @@ local int gz_avail(gz_statep state) {
     if (state->eof == 0) {
         if (strm->avail_in) {       /* copy what's there to the start */
             unsigned char *p = state->in;
-            unsigned const char *q = strm->next_in;
+            unsigned const char FAR *q = strm->next_in;
             unsigned n = strm->avail_in;
             do {
                 *p++ = *q++;
@@ -140,7 +153,7 @@ local int gz_look(gz_statep state) {
        the output buffer is larger than the input buffer, which also assures
        space for gzungetc() */
     state->x.next = state->out;
-    memcpy(state->x.next, strm->next_in, strm->avail_in);
+    zmemcpy(state->x.next, strm->next_in, strm->avail_in);
     state->x.have = strm->avail_in;
     strm->avail_in = 0;
     state->how = COPY;
@@ -292,7 +305,7 @@ local z_size_t gz_read(gz_statep state, voidp buf, z_size_t len) {
         if (state->x.have) {
             if (state->x.have < n)
                 n = state->x.have;
-            memcpy(buf, state->x.next, n);
+            zmemcpy(buf, state->x.next, n);
             state->x.next += n;
             state->x.have -= n;
         }
@@ -316,7 +329,7 @@ local z_size_t gz_read(gz_statep state, voidp buf, z_size_t len) {
 
         /* large len -- read directly into user buffer */
         else if (state->how == COPY) {      /* read directly */
-            if (gz_load(state, (unsigned char *)buf, n, &n) == -1)
+            if (gz_load(state, buf, n, &n) == -1)
                 return 0;
         }
 
@@ -500,7 +513,7 @@ int ZEXPORT gzungetc(int c, gzFile file) {
 char * ZEXPORT gzgets(gzFile file, char *buf, int len) {
     unsigned left, n;
     char *str;
-    unsigned char *eol;
+    const unsigned char FAR *eol;
     gz_statep state;
 
     /* check parameters and get internal structure */
@@ -536,12 +549,12 @@ char * ZEXPORT gzgets(gzFile file, char *buf, int len) {
 
         /* look for end-of-line in current output buffer */
         n = state->x.have > left ? left : state->x.have;
-        eol = (unsigned char *)memchr(state->x.next, '\n', n);
+        eol = (const unsigned char FAR *)zmemchr(state->x.next, '\n', n);
         if (eol != NULL)
             n = (unsigned)(eol - state->x.next) + 1;
 
         /* copy through end-of-line, or remainder if not found */
-        memcpy(buf, state->x.next, n);
+        zmemcpy(buf, state->x.next, n);
         state->x.have -= n;
         state->x.next += n;
         state->x.pos += n;

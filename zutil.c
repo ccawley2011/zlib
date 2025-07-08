@@ -158,6 +158,15 @@ int ZLIB_INTERNAL zmemcmp(const Bytef* s1, const Bytef* s2, uInt len) {
     return 0;
 }
 
+const Bytef* ZLIB_INTERNAL zmemchr(const Bytef* source, uInt ch, uInt len) {
+    uInt j;
+
+    for (j = 0; j < len; j++) {
+        if (source[j] == ch) return source + j;
+    }
+    return Z_NULL;
+}
+
 void ZLIB_INTERNAL zmemzero(Bytef* dest, uInt len) {
     if (len == 0) return;
     do {

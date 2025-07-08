@@ -553,7 +553,7 @@ int ZEXPORT deflateSetDictionary(z_streamp strm, const Bytef *dictionary,
     uInt str, n;
     int wrap;
     unsigned avail;
-    z_const unsigned char *next;
+    z_const Bytef *next;
 
     if (deflateStateCheck(strm) || dictionary == Z_NULL)
         return Z_STREAM_ERROR;
@@ -2051,7 +2051,8 @@ local block_state deflate_slow(deflate_state *s, int flush) {
 local block_state deflate_rle(deflate_state *s, int flush) {
     int bflush;             /* set if current block must be flushed */
     uInt prev;              /* byte at distance one to match */
-    Bytef *scan, *strend;   /* scan goes up to strend for length of run */
+    Bytef *scan;            /* scan goes up to strend for length of run */
+    Bytef *strend;
 
     for (;;) {
         /* Make sure that we always have enough lookahead, except
